@@ -1,0 +1,3 @@
+.dropbox
+*.bak
+__pycache__
