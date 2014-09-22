@@ -24,8 +24,8 @@ label = pyglet.text.Label('shmupHell',
                           anchor_x='center', anchor_y='center')
 
 
-key_state = { key.LEFT: False, key.RIGHT: False, key.UP: False, key.DOWN: False}
-key_action_time = { key.LEFT: 0, key.RIGHT: 0, key.UP: 0, key.DOWN: 0}
+key_state = { key.LEFT: False, key.RIGHT: False, key.UP: False, key.DOWN: False, key.Z: False}
+key_action_time = { key.LEFT: 0, key.RIGHT: 0, key.UP: 0, key.DOWN: 0, key.Z: 0}
 mouse_state = { 'is_down': False, 'x': 0, 'y': 0, 'time': 0}
 
 @game_window.event
@@ -60,7 +60,7 @@ def mouse_state_modify(x, y, button = mouse.LEFT, modifiers = 0, is_down = mouse
         mouse_state['time']=time
         
 def key_state_modify(symbol, modifiers, is_down, time):
-    if symbol >= key.LEFT and symbol <= key.DOWN:
+    if symbol >= key.LEFT and symbol <= key.DOWN or key.Z:
         key_state[symbol] = is_down
         key_action_time = time
 
@@ -70,7 +70,7 @@ def create_entities():
     enemy_array = []
     player = Player(10)
     cache_references(player, bullet_array, enemy_array)
-    enemy_array.append(Enemy(500,500,100))
+    enemy_array.append(Enemy(500,500,1))
         
     
 def loop(time):
@@ -82,10 +82,15 @@ def loop(time):
         player.moveup()
     if key_state[key.DOWN]:
         player.movedown()
+    if key_state[key.Z]:
+        player.fire()
     if enemy_array:
         for enemy in enemy_array:
-            enemy.bullet_gen()
-            enemy.move()
+            if not enemy.killyourself:
+                enemy.bullet_gen()
+                enemy.move()
+            else:
+                enemy_array.remove(enemy)
     if bullet_array:
         for bullet in bullet_array:
             if not bullet.killyourself:
@@ -126,10 +131,10 @@ def on_draw():
     if bullet_array:
         for bullet in bullet_array:
             glBegin(GL_POLYGON)
-            glVertex2f(enemy.x-2, enemy.y-2)
-            glVertex2f(enemy.x+2, enemy.y-2)
-            glVertex2f(enemy.x+2, enemy.y+2)
-            glVertex2f(enemy.x-2, enemy.y+2)
+            glVertex2f(bullet.x-2, bullet.y-2)
+            glVertex2f(bullet.x+2, bullet.y-2)
+            glVertex2f(bullet.x+2, bullet.y+2)
+            glVertex2f(bullet.x-2, bullet.y+2)
             glEnd()
             
             

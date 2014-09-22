@@ -12,29 +12,32 @@ def cache_references(_player, _bullet_array, _enemy_array):
 
 class Bullet:
     """BULLETS YO"""
-    def __init__(self, x, y, speed, direction, radius):
+    def __init__(self, x, y, speed, direction, radius, player_owned):
         self.x = x
         self.y = y
         self.speed = speed
         self.direction = direction
         self.radius = radius
         self.killyourself = False
+        self.player_owned = player_owned
     def move(self):
         self.x = self.x + self.speed*math.cos(self.direction) #wahoo trig
         self.y = self.y + self.speed*math.sin(self.direction)
+        if(self.x < 0 or self.y < 0 or self.x > 1280 or self.y > 720):
+            self.killyourself = True
     def hitcheck(self):
-        if(player):
-            for Enemy in enemy_array:
-                safe = self.radius + Enemy.radius
-                if(safe > abs(self.x - Enemy.x)):     #preliminary, hopefully less expensive tests
-                    if(safe > abs(self.y - Enemy.y)): #to try to reduce computation
-                        if(safe > math.sqrt((self.x - Enemy.x) * (self.x - Enemy.x) + (self.y - Enemy.y) * (self.y - Enemy.y))): #proper hitcheck
-                            Enemy.killyourself = True
+        if(self.player_owned):
+            for enemy in enemy_array:
+                safe = self.radius + enemy.radius
+                if(safe > abs(self.x - enemy.x)):     #preliminary, hopefully less expensive tests
+                    if(safe > abs(self.y - enemy.y)): #to try to reduce computation
+                        if(safe > math.sqrt((self.x - enemy.x) * (self.x - enemy.x) + (self.y - enemy.y) * (self.y - enemy.y))): #proper hitcheck
+                            enemy.health = enemy.health - 1
                             self.killyourself = True
         else: 
             safe = self.radius + player.radius
-            if(safe > math.abs(self.x - player.x)):     #preliminary, hopefully less expensive tests
-                if(safe > math.abs(self.y - player.y)): #to try to reduce computation
+            if(safe > abs(self.x - player.x)):     #preliminary, hopefully less expensive tests
+                if(safe > abs(self.y - player.y)): #to try to reduce computation
                     if(safe > math.sqrt((self.x - player.x) * (self.x - player.x) + (self.y - player.y) * (self.y - player.y))): #proper hitcheck
                         player.killyourself()
                         self.killyourself = True
@@ -66,6 +69,9 @@ class Player:
     def movedown(self):
         if self.y>10:
             self.y =self.y-self.speed  
+    def fire(self):
+        bullet_array.append(Bullet(self.x, self.y, 5, math.pi/2 , 1, True))
+        
 class Enemy:
     """THEM"""
     def __init__(self, x, y, health):
@@ -77,7 +83,7 @@ class Enemy:
         self.speed = 200/60
         self.cx = 0 #circle centre
         self.cy = 0
-        self.radius = 1 #size
+        self.radius = 1 #hitbox
         self.c_radius = 0 #circular movement radius
         self.killyourself = False
         self.direction = 0 
@@ -85,9 +91,9 @@ class Enemy:
         self.cool_down = 2000 #msec
         self.bullet_count = 0
     def bullet_gen(self): #instantiate a bullet and place it in the active array
-        if time.time()-self.cool_down_start>self.cool_down:
+        if (time.time()-self.cool_down_start)>self.cool_down:
             if self.bullet_count <10:
-                bullet_array.append(Bullet(self.x, self.y, 1, math.atan2((player.y-self.y),(player.x-self.x)),1))
+                bullet_array.append(Bullet(self.x, self.y, 1, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count+1
             else:
                 self.cool_down_start = time.time()
@@ -104,6 +110,8 @@ class Enemy:
         else:
             self.x = self.x + self.speed*math.cos(self.direction)
             self.y = self.y + self.speed*math.sin(self.direction)
+        if(self.x < 0 or self.y < 0 or self.x > 1280 or self.y > 720 or self.health <= 0):
+            self.killyourself = True
     def circ(self, cx, cy):
         self.circular = True
         self.cx = 0
