@@ -45,11 +45,13 @@ class Bullet:
 class Player:
     """YOU, DAWG"""
     def __init__(self, lives):
-        self.lives = lives
+        self.lives = lives #extra life
         self.x = wwidth/2 #placeholder for center bottom of screen
         self.y = 30 #player always spawns in same place
         self.radius = 1 #hitbox size
         self.speed = 400/60
+        self.last_bullet_fired_time = 0
+        self.consecutive_cool_down = 0.1
     def killyourself(self):
         self.lives = self.lives - 1
         if(self.lives < 0):
@@ -69,8 +71,16 @@ class Player:
     def movedown(self):
         if self.y>10:
             self.y =self.y-self.speed  
-    def fire(self):
-        bullet_array.append(Bullet(self.x, self.y, 5, math.pi/2 , 1, True))
+    #def fire(self):
+        #bullet_array.append(Bullet(self.x, self.y, 4, math.pi/2 , 1, True))
+        #bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
+        #bullet_array.append(Bullet(self.x, self.y, 4, 7*math.pi/12 , 1, True))
+    def fire(self): #instantiate a bullet and place it in the active array            
+        if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+            bullet_array.append(Bullet(self.x, self.y, 4, math.pi/2 , 1, True))
+            bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
+            bullet_array.append(Bullet(self.x, self.y, 4, 7*math.pi/12 , 1, True))
+            self.last_bullet_fired_time = time.time()
         
 class Enemy:
     """THEM"""
@@ -87,16 +97,18 @@ class Enemy:
         self.c_radius = 0 #circular movement radius
         self.killyourself = False
         self.direction = 0 
-        self.cool_down_start = 0 #time value
-        self.cool_down = 2000 #msec
+        self.last_bullet_fired_time = 0
+        self.stream_cool_down = 1.00 #time value
+        self.consecutive_cool_down = 0.05
         self.bullet_count = 0
-    def bullet_gen(self): #instantiate a bullet and place it in the active array
-        if (time.time()-self.cool_down_start)>self.cool_down:
-            if self.bullet_count <10:
-                bullet_array.append(Bullet(self.x, self.y, 1, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
+    def bullet_gen(self): #instantiate a bullet and place it in the active array            
+        if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+            if self.bullet_count <10 and time.time() > self.last_bullet_fired_time:
+                bullet_array.append(Bullet(self.x, self.y, 3, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count+1
+                self.last_bullet_fired_time = time.time()
             else:
-                self.cool_down_start = time.time()
+                self.last_bullet_fired_time = self.stream_cool_down + self.last_bullet_fired_time
                 self.bullet_count = 0
     def move(self): #movement
         if(self.circular == True):
