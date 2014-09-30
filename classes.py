@@ -44,14 +44,17 @@ class Bullet:
 
 class Player:
     """YOU, DAWG"""
-    def __init__(self, lives):
+    def __init__(self, lives, bombs):
         self.lives = lives #extra life
+        self.bombs = bombs #droppin bombs
         self.x = wwidth/2 #placeholder for center bottom of screen
         self.y = 30 #player always spawns in same place
         self.radius = 1 #hitbox size
         self.speed = 400/60
         self.last_bullet_fired_time = 0
         self.consecutive_cool_down = 0.1
+        self.last_bomb_time = 0
+        self.bomb_cool_down = 1
     def killyourself(self):
         self.lives = self.lives - 1
         if(self.lives < 0):
@@ -81,6 +84,11 @@ class Player:
             bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
             bullet_array.append(Bullet(self.x, self.y, 4, 7*math.pi/12 , 1, True))
             self.last_bullet_fired_time = time.time()
+    def bomb(self):
+        if(self.bombs > 0 and (time.time()-self.last_bomb_time)>self.bomb_cool_down):
+            self.bombs = self.bombs - 1
+            bullet_array.clear()
+            self.last_bomb_time = time.time()
         
 class Enemy:
     """THEM"""

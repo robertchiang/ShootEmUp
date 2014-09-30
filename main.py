@@ -13,8 +13,8 @@ from classes import *
 
 def load_resources():
     global key_state, key_action_time, mouse_state
-    key_state = { key.LEFT: False, key.RIGHT: False, key.UP: False, key.DOWN: False, key.Z: False}
-    key_action_time = { key.LEFT: 0, key.RIGHT: 0, key.UP: 0, key.DOWN: 0, key.Z: 0}
+    key_state = { key.LEFT: False, key.RIGHT: False, key.UP: False, key.DOWN: False, key.Z: False, key.X: False}
+    key_action_time = { key.LEFT: 0, key.RIGHT: 0, key.UP: 0, key.DOWN: 0, key.Z: 0, key.X: 0}
     mouse_state = { 'is_down': False, 'x': 0, 'y': 0, 'time': 0}
     
     global game_window
@@ -136,6 +136,8 @@ def loop_ingame(time):
         player.movedown()
     if key_state[key.Z]:
         player.fire()
+    if key_state[key.X]:
+        player.bomb()
     if enemy_array:
         for enemy in enemy_array:
             if not enemy.killyourself:
@@ -156,10 +158,10 @@ def create_entities():
     
     bullet_array = []
     enemy_array = []
-    player = Player(0)
+    player = Player(0, 3)
     cache_references(player, bullet_array, enemy_array)
-    enemy_array.append(Enemy(500,500,1))
-    enemy_array[0].circular=True
+    enemy_array.append(Enemy(400,400,1))
+    enemy_array[0].circ(300, 300)
     enemy_array.append(Enemy(1,500,1))
     enemy_array.append(Enemy(1,500,1))
                               
