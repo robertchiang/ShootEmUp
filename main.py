@@ -159,6 +159,7 @@ def create_entities():
     player = Player(0)
     cache_references(player, bullet_array, enemy_array)
     enemy_array.append(Enemy(500,500,1))
+    enemy_array[0].circular=True
     enemy_array.append(Enemy(1,500,1))
     enemy_array.append(Enemy(1,500,1))
                               

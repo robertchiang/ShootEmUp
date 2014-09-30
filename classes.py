@@ -94,7 +94,6 @@ class Enemy:
         self.cx = 0 #circle centre
         self.cy = 0
         self.radius = 1 #hitbox
-        self.c_radius = 0 #circular movement radius
         self.killyourself = False
         self.direction = 0 
         self.last_bullet_fired_time = 0
@@ -112,7 +111,7 @@ class Enemy:
                 self.bullet_count = 0
     def move(self): #movement
         if(self.circular == True):
-            self.direction =  math.atan2((self.y-self.cy)/(self.x-self.cx))
+            self.direction =  math.atan2((self.y-self.cy),(self.x-self.cx))
             if(self.ccw == True):
                 self.x = self.x + self.speed*math.cos(self.direction+math.pi/2)
                 self.y = self.y + self.speed*math.sin(self.direction+math.pi/2)
@@ -126,9 +125,8 @@ class Enemy:
             self.killyourself = True
     def circ(self, cx, cy):
         self.circular = True
-        self.cx = 0
-        self.cy = 0
-        self.c_radius =  math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy))
+        self.cx = cx
+        self.cy = cy
     def line(self, direction):
         self.direction = direction
         self.circular = False
