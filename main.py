@@ -138,6 +138,13 @@ def loop_ingame(time):
         player.fire()
     if key_state[key.X]:
         player.bomb()
+    if player.bomb_state:
+        if player.bomb_radius < 1000:
+            player.bomb_radius = player.bomb_radius + 1
+        else:
+            player.bomb_state = False
+            player.bomb_radius = 0
+        
     if enemy_array:
         for enemy in enemy_array:
             if not enemy.killyourself:
@@ -160,10 +167,12 @@ def create_entities():
     enemy_array = []
     player = Player(0, 3)
     cache_references(player, bullet_array, enemy_array)
-    enemy_array.append(Enemy(400,400,1))
-    enemy_array[0].circ(300, 300)
-    enemy_array.append(Enemy(1,500,1))
-    enemy_array.append(Enemy(1,500,1))
+    enemy_array.append(Enemy(400,400,1, 0))
+    enemy_array.append(Enemy(200,400,1, 0))
+    enemy_array.append(Enemy(600,400,1, 0))
+    enemy_array[0].circ(450, 450)
+    enemy_array[1].circ(200, 250)
+    enemy_array[2].circ(650, 400)
                               
 def rebind_main_menu():
     global draw_function, loop_function

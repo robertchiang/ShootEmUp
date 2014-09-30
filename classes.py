@@ -35,12 +35,19 @@ class Bullet:
                             enemy.health = enemy.health - 1
                             self.killyourself = True
         else: 
-            safe = self.radius + player.radius
-            if(safe > abs(self.x - player.x)):     #preliminary, hopefully less expensive tests
-                if(safe > abs(self.y - player.y)): #to try to reduce computation
-                    if(safe > math.sqrt((self.x - player.x) * (self.x - player.x) + (self.y - player.y) * (self.y - player.y))): #proper hitcheck
-                        player.killyourself()
-                        self.killyourself = True
+            if player.bomb_state:
+                safe = self.radius + player.bomb_radius
+                if(safe > abs(self.x - player.bomb_x)):    #BOMB HITCHECK
+                    if(safe > abs(self.y - player.bomb_y)): 
+                        if(safe > math.sqrt((self.x - player.bomb_x) * (self.x - player.bomb_x) + (self.y - player.bomb_y) * (self.y - player.bomb_y))): 
+                            self.killyourself = True
+            else:
+                safe = self.radius + player.radius
+                if(safe > abs(self.x - player.x)):     #preliminary, hopefully less expensive tests
+                    if(safe > abs(self.y - player.y)): #to try to reduce computation
+                        if(safe > math.sqrt((self.x - player.x) * (self.x - player.x) + (self.y - player.y) * (self.y - player.y))): #proper hitcheck
+                            player.killyourself()
+                            self.killyourself = True
 
 class Player:
     """YOU, DAWG"""
@@ -55,6 +62,10 @@ class Player:
         self.consecutive_cool_down = 0.1
         self.last_bomb_time = 0
         self.bomb_cool_down = 1
+        self.bomb_state = False
+        self.bomb_radius = 0
+        self.bomb_x = 0
+        self.bomb_y = 0
     def killyourself(self):
         self.lives = self.lives - 1
         if(self.lives < 0):
@@ -87,12 +98,14 @@ class Player:
     def bomb(self):
         if(self.bombs > 0 and (time.time()-self.last_bomb_time)>self.bomb_cool_down):
             self.bombs = self.bombs - 1
-            bullet_array.clear()
             self.last_bomb_time = time.time()
+            self.bomb_state = True
+            self.bomb_x = self.x
+            self.bomb_y = self.y
         
 class Enemy:
     """THEM"""
-    def __init__(self, x, y, health):
+    def __init__(self, x, y, health, stream_cool_down):
         self.x = x
         self.y = y
         self.health = health
@@ -105,7 +118,7 @@ class Enemy:
         self.killyourself = False
         self.direction = 0 
         self.last_bullet_fired_time = 0
-        self.stream_cool_down = 1.00 #time value
+        self.stream_cool_down = stream_cool_down #time value
         self.consecutive_cool_down = 0.05
         self.bullet_count = 0
     def bullet_gen(self): #instantiate a bullet and place it in the active array            
