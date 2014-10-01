@@ -235,7 +235,7 @@ class Stage:
     def stage_activate(self, stage_start_time):
         self.stage_start_time = stage_start_time
     def make_things_appear(self): #method to call every loop() iteration in main to check if things can be added
-        if (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter]):
+        if (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter] + self.stage_start_time):
             #enemy_array.append(self.enemy_queue[self.counter])
             enemy_array.append(Enemy(*(self.enemy_queue[self.counter])))
             self.counter = self.counter + 1

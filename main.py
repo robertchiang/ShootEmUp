@@ -110,13 +110,20 @@ def draw_menu():
 def draw_ingame():
     
     if player:
+        if player.invuln_time>0:
+            glColor3f(0.5,0.5,0.5) #gray when invulnerable
         glBegin(GL_POLYGON) #player as diamond for now
-        glVertex2f(player.x, player.y+2)
-        glVertex2f(player.x-2, player.y)
-        glVertex2f(player.x+2, player.y)
-        glVertex2f(player.x, player.y-2)
+        glVertex2f(player.x, player.y+3)
+        glVertex2f(player.x-3, player.y)
+        glVertex2f(player.x, player.y-3)
+        glVertex2f(player.x+3, player.y)
+        
+        if player.invuln_time>0:
+            glColor3f(1,1,1) #restore
+        
         glEnd()
-    
+
+        
     ##global player
     ##playersprite.x=player.x
     ##playersprite.y=player.y
