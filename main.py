@@ -144,12 +144,14 @@ def loop_ingame(time):
         else:
             player.bomb_state = False
             player.bomb_radius = 0
-    player.power = player.power + 0.01
-        
+    print(player.invuln_time)
+    if player.invuln_time > 0:
+        player.invuln_time = player.invuln_time - 1
+    player.power = player.power + 0.01        
     if enemy_array:
         for enemy in enemy_array:
             if not enemy.killyourself:
-                enemy.bullet_gen()
+                enemy.fire()
                 enemy.move()
             else:
                 enemy_array.remove(enemy)
@@ -163,17 +165,17 @@ def loop_ingame(time):
     
 def create_entities():
     global bullet_array, enemy_array, player, cache_references, enemy_array
-    
     bullet_array = []
     enemy_array = []
-    player = Player(0, 3)
-    cache_references(player, bullet_array, enemy_array)
-    enemy_array.append(Enemy(400,400,1, 0))
-    enemy_array.append(Enemy(200,400,1, 0))
-    enemy_array.append(Enemy(600,400,1, 0))
-    enemy_array[0].circ(450, 450)
-    enemy_array[1].circ(200, 250)
-    enemy_array[2].circ(650, 400)
+    player = Player(2, 3)
+    cache_references(player, bullet_array, enemy_array)    
+    enemy_array.append(StageOneBoss())
+    #enemy_array.append(Enemy(400,400,1, 0))
+    #enemy_array.append(Enemy(200,400,1, 0))
+    #enemy_array.append(Enemy(600,400,1, 0))
+    #enemy_array[0].circ(450, 450)
+    #enemy_array[1].circ(200, 250)
+    #enemy_array[2].circ(650, 400)
                               
 def rebind_main_menu():
     global draw_function, loop_function
