@@ -23,7 +23,7 @@ class Bullet:
     def move(self):
         self.x = self.x + self.speed*math.cos(self.direction) #wahoo trig
         self.y = self.y + self.speed*math.sin(self.direction)
-        if(self.x < 0 or self.y < 0 or self.x > 1280 or self.y > 720):
+        if(self.x < -100 or self.y < -100 or self.x > 1380 or self.y > 820):
             self.killyourself = True
     def hitcheck(self):
         if(self.player_owned):
@@ -66,6 +66,7 @@ class Player:
         self.bomb_radius = 0
         self.bomb_x = 0
         self.bomb_y = 0
+        self.power = 0 #NO ONE MAN SHOULD HAVE ALL THAT POWER
     def killyourself(self):
         self.lives = self.lives - 1
         if(self.lives < 0):
@@ -90,11 +91,46 @@ class Player:
         #bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
         #bullet_array.append(Bullet(self.x, self.y, 4, 7*math.pi/12 , 1, True))
     def fire(self): #instantiate a bullet and place it in the active array            
-        if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-            bullet_array.append(Bullet(self.x, self.y, 4, math.pi/2 , 1, True))
-            bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
-            bullet_array.append(Bullet(self.x, self.y, 4, 7*math.pi/12 , 1, True))
-            self.last_bullet_fired_time = time.time()
+        if self.power > 4:
+            if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+                bullet_array.append(Bullet(self.x, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 10, 5*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 10, 7*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-50, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+50, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x-20, self.y, 10, 9*math.pi/24 , 1, True))
+                bullet_array.append(Bullet(self.x+20, self.y, 10, 15*math.pi/24 , 1, True))
+                bullet_array.append(Bullet(self.x-20, self.y-10, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+20, self.y-10, 10, math.pi/2 , 1, True))
+                self.last_bullet_fired_time = time.time()
+        elif self.power > 3:
+            if(time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+                bullet_array.append(Bullet(self.x, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 10, 5*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 10, 7*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-50, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+50, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x-20, self.y, 10, 9*math.pi/24 , 1, True))
+                bullet_array.append(Bullet(self.x+20, self.y, 10, 15*math.pi/24 , 1, True))
+                self.last_bullet_fired_time = time.time()
+        elif self.power > 2:
+            if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+                bullet_array.append(Bullet(self.x, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 10, 5*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 10, 7*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-50, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+50, self.y, 10, math.pi/2 , 1, True))
+                self.last_bullet_fired_time = time.time()
+        elif self.power > 1:
+            if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+                bullet_array.append(Bullet(self.x, self.y, 10, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 10, 5*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 10, 7*math.pi/12 , 1, True))
+                self.last_bullet_fired_time = time.time()
+        else:
+            if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+                bullet_array.append(Bullet(self.x, self.y, 10, math.pi/2 , 1, True))
+                self.last_bullet_fired_time = time.time()
     def bomb(self):
         if(self.bombs > 0 and (time.time()-self.last_bomb_time)>self.bomb_cool_down):
             self.bombs = self.bombs - 1

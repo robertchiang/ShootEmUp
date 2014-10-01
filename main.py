@@ -144,6 +144,7 @@ def loop_ingame(time):
         else:
             player.bomb_state = False
             player.bomb_radius = 0
+    player.power = player.power + 0.01
         
     if enemy_array:
         for enemy in enemy_array:
