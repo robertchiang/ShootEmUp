@@ -1,0 +1,9 @@
+#,format_of_row:time,x,y,health,stream_cool_down,direction=0,circular=False,cx=0,cy=0
+#,booleans_are 1 and 0
+0,600,400,1,0,0,0,0,0
+0,200,400,1,0
+0,600,400,1,0
+4,600,400,1,0,0,1,450,450
+4,200,400,1,0,0,1,200,250
+4,600,400,1,0,0,1,650,400
+

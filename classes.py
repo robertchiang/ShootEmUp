@@ -123,18 +123,18 @@ class Player:
         
 class Enemy:
     """THEM"""
-    def __init__(self, x, y, health, stream_cool_down):
+    def __init__(self, x, y, health, stream_cool_down, direction = 0, circular = False, cx = 0, cy = 0):
         self.x = x
         self.y = y
         self.health = health
-        self.circular = False
+        self.circular = circular
         self.ccw = True #default to counter-clockwise circular motion
         self.speed = 200/60
-        self.cx = 0 #circle centre
-        self.cy = 0
+        self.cx = cx #circle centre
+        self.cy = cy
         self.radius = 10 #hitbox
         self.killyourself = False
-        self.direction = 0 
+        self.direction = direction
         self.last_bullet_fired_time = 0
         self.stream_cool_down = stream_cool_down #time value
         self.consecutive_cool_down = 0.05
@@ -223,3 +223,19 @@ class StageOneBoss (Enemy):
                     self.bullet_count = 400
                 else:
                     self.bullet_count = 100
+                    
+
+class Stage:
+    def __init__(self, time_queue, enemy_queue): #stage is not activated until stage_activate(time.time()) called
+        self.stage_start_time = 0 # secs
+        self.time_queue = time_queue # secs from stage start
+        self.enemy_queue = enemy_queue #enemy_queue is array of [x,y,health,stream_cool_down,direction=0,circular=False,cx=0,cy=0]
+        self.enemy_count = len(enemy_queue) # total number of enemies
+        self.counter = 0
+    def stage_activate(self, stage_start_time):
+        self.stage_start_time = stage_start_time
+    def make_things_appear(self): #method to call every loop() iteration in main to check if things can be added
+        if (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter]):
+            #enemy_array.append(self.enemy_queue[self.counter])
+            enemy_array.append(Enemy(*(self.enemy_queue[self.counter])))
+            self.counter = self.counter + 1

@@ -7,8 +7,27 @@ import math
 from pyglet.gl import *
 
 import time
+import csv
 
 from classes import *
+
+def import_stage(filename): # format of row: time,x,y,health,stream_cool_down,direction=0,circular=False,cx=0,cy=0
+    time_queue = []
+    enemy_queue = []
+    with open(filename, 'r') as f:
+        delimited_text = csv.reader(f, delimiter=',', skipinitialspace=True, quotechar='"')
+        for row in delimited_text:
+            if row and not row[0] == "#": #first row is comments, doesnt count
+                time_queue.append(float(row[0]))
+                enemy_args = [ int(row[1]), int(row[2]), int(row[3]), float(row[4]) ]
+                #if len(row)>5:
+                for i in range(5, len(row)):
+                    if i == 5:     enemy_args.append(float(row[5]))
+                    elif i == 6:   enemy_args.append(bool(row[6]))
+                    elif i == 7:   enemy_args.append(int(row[7]))
+                    elif i == 8:   enemy_args.append(int(row[8]))                    
+                enemy_queue.append(enemy_args)
+    return Stage(time_queue, enemy_queue)
 
 
 def load_resources():
@@ -60,6 +79,9 @@ def load_resources():
     global player, bullet_array, enemy_array 
     global draw_function, loop_function
     rebind_main_menu()
+    
+    global current_stage
+    current_stage = import_stage("stage1.csv")
 
 def draw_menu():   
     for i in range(0,3):
@@ -148,7 +170,10 @@ def loop_ingame(time):
     print(player.invuln_time)
     if player.invuln_time > 0:
         player.invuln_time = player.invuln_time - 1
-    player.power = player.power + 0.01        
+    player.power = player.power + 0.01   
+    
+    current_stage.make_things_appear()
+         
     if enemy_array:
         for enemy in enemy_array:
             if not enemy.killyourself:
@@ -170,7 +195,8 @@ def create_entities():
     enemy_array = []
     player = Player(2, 3)
     cache_references(player, bullet_array, enemy_array)    
-    enemy_array.append(StageOneBoss())
+    #enemy_array.append(StageOneBoss())
+    current_stage.stage_activate(time.time())
     #enemy_array.append(Enemy(400,400,1, 0))
     #enemy_array.append(Enemy(200,400,1, 0))
     #enemy_array.append(Enemy(600,400,1, 0))
