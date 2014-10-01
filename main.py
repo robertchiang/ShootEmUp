@@ -87,17 +87,18 @@ def draw_menu():
 
 def draw_ingame():
     
-    ##if player:
-    ##    glBegin(GL_TRIANGLES) #player as triangle for now
-    ##    glVertex2f(player.x, player.y+40)
-    ##    glVertex2f(player.x-30, player.y)
-    ##    glVertex2f(player.x+30, player.y)
-    ##    glEnd()
+    if player:
+        glBegin(GL_POLYGON) #player as diamond for now
+        glVertex2f(player.x, player.y+2)
+        glVertex2f(player.x-2, player.y)
+        glVertex2f(player.x+2, player.y)
+        glVertex2f(player.x, player.y-2)
+        glEnd()
     
-    global player
-    playersprite.x=player.x
-    playersprite.y=player.y
-    playersprite.draw()
+    ##global player
+    ##playersprite.x=player.x
+    ##playersprite.y=player.y
+    ##playersprite.draw()
     
     if enemy_array:
         for enemy in enemy_array:
@@ -139,7 +140,7 @@ def loop_ingame(time):
     if key_state[key.X]:
         player.bomb()
     if player.bomb_state:
-        if player.bomb_radius < 1000:
+        if player.bomb_radius < 200:
             player.bomb_radius = player.bomb_radius + 1
         else:
             player.bomb_state = False
