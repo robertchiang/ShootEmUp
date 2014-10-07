@@ -17,7 +17,7 @@ def import_stage(filename): # format of row: time,x,y,health,stream_cool_down,di
     with open(filename, 'r') as f:
         delimited_text = csv.reader(f, delimiter=',', skipinitialspace=True, quotechar='"')
         for row in delimited_text:
-            if row and not row[0] == "#": #first row is comments, doesnt count
+            if row and not row[0][0] == "#": #first row is comments, doesnt count
                 time_queue.append(float(row[0]))
                 enemy_args = [ int(row[1]), int(row[2]), int(row[3]), float(row[4]) ]
                 #if len(row)>5:
@@ -41,11 +41,11 @@ def load_resources():
     #keyboard = key.KeyStateHandler()
     #game_window.push_handlers(keyboard)
     
-    global playerimage, playersprite
-    playerimage = pyglet.image.load("player.png")
-    playerimage.anchor_x = playerimage.width //2 
-    playerimage.anchor_y = playerimage.height //2 
-    playersprite = pyglet.sprite.Sprite(playerimage)
+    #global playerimage, playersprite
+    #playerimage = pyglet.image.load("player.png")
+    #playerimage.anchor_x = playerimage.width //2 
+    #playerimage.anchor_y = playerimage.height //2 
+    #playersprite = pyglet.sprite.Sprite(playerimage)
     
     global draw_function, loop_function
     
@@ -82,6 +82,10 @@ def load_resources():
     
     global current_stage
     current_stage = import_stage("stage1.csv")
+    
+    global fps_display 
+    
+    fps_display = pyglet.clock.ClockDisplay()
 
 def draw_menu():   
     for i in range(0,3):
@@ -113,10 +117,10 @@ def draw_ingame():
         if player.invuln_time>0:
             glColor3f(0.5,0.5,0.5) #gray when invulnerable
         glBegin(GL_POLYGON) #player as diamond for now
-        glVertex2f(player.x, player.y+3)
-        glVertex2f(player.x-3, player.y)
-        glVertex2f(player.x, player.y-3)
-        glVertex2f(player.x+3, player.y)
+        glVertex2f(player.x, player.y+4)
+        glVertex2f(player.x-4, player.y)
+        glVertex2f(player.x, player.y-4)
+        glVertex2f(player.x+4, player.y)
         
         if player.invuln_time>0:
             glColor3f(1,1,1) #restore
@@ -156,14 +160,15 @@ def loop_menu(time):
 
     
 def loop_ingame(time):
+    
     if key_state[key.LEFT]:
-        player.moveleft()
+        player.moveleft(time)
     if key_state[key.RIGHT]:
-        player.moveright()
+        player.moveright(time)
     if key_state[key.UP]:
-        player.moveup()
+        player.moveup(time)
     if key_state[key.DOWN]:
-        player.movedown()
+        player.movedown(time)
     if key_state[key.Z]:
         player.fire()
     if key_state[key.X]:
@@ -174,35 +179,47 @@ def loop_ingame(time):
         else:
             player.bomb_state = False
             player.bomb_radius = 0
-    print(player.invuln_time)
+    #print(player.invuln_time)
     if player.invuln_time > 0:
         player.invuln_time = player.invuln_time - 1
     player.power = player.power + 0.01   
     
     current_stage.make_things_appear()
-         
-    if enemy_array:
-        for enemy in enemy_array:
-            if not enemy.killyourself:
-                enemy.fire()
-                enemy.move()
-            else:
-                enemy_array.remove(enemy)
-    if bullet_array:
-        for bullet in bullet_array:
-            if not bullet.killyourself:
-                bullet.hitcheck()
-                bullet.move()
-            else:  
-                bullet_array.remove(bullet)
     
+    global enemy_array, bullet_array
+    
+    if enemy_array:    
+        enemy_array[:] = (enemy for enemy in enemy_array if not enemy.killyourself)
+        for enemy in enemy_array:
+            enemy.fire()
+            enemy.move(time)
+        
+
+                
+    if bullet_array:
+
+        bullet_array[:] = (bullet for bullet in bullet_array if not bullet.killyourself)
+        
+        
+        for bullet in bullet_array:
+            bullet.hitcheck()
+            bullet.move(time)
+
+    #print(len(bullet_array))    
+        
 def create_entities():
     global bullet_array, enemy_array, player, cache_references, enemy_array
     bullet_array = []
     enemy_array = []
+
+
     player = Player(2, 3)
-    cache_references(player, bullet_array, enemy_array)    
-    #enemy_array.append(StageOneBoss())
+    
+    cache_references(player, bullet_array, enemy_array) 
+    boss = StageOneBoss()
+    boss.health = 10
+    enemy_array.append(boss)
+
     current_stage.stage_activate(time.time())
     #enemy_array.append(Enemy(400,400,1, 0))
     #enemy_array.append(Enemy(200,400,1, 0))
@@ -280,6 +297,7 @@ def on_draw():
     #game_window.clear()
     glClear(GL_COLOR_BUFFER_BIT) #clear buffer
     glLoadIdentity() #reset rotation matrix
+    fps_display.draw()
     
     draw_function()
     

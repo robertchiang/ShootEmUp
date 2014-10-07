@@ -1,4 +1,4 @@
-#,format_of_row:time,x,y,health,stream_cool_down,direction=0,circular=False,cx=0,cy=0
+#format_of_row:time,x,y,health,stream_cool_down,direction=0,circular=False,cx=0,cy=0
 #,booleans_are 1 and 0
 0,600,400,1,0,0,0,0,0
 0,200,400,1,0

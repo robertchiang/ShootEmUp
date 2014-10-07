@@ -12,6 +12,8 @@ def cache_references(_player, _bullet_array, _enemy_array):
 
 class Bullet:
     """BULLETS YO"""
+    __slots__ = ['x','y','speed','direction','radius','killyourself','player_owned']
+    
     def __init__(self, x, y, speed, direction, radius, player_owned):
         self.x = x
         self.y = y
@@ -20,9 +22,9 @@ class Bullet:
         self.radius = radius
         self.killyourself = False
         self.player_owned = player_owned
-    def move(self):
-        self.x = self.x + self.speed*math.cos(self.direction) #wahoo trig
-        self.y = self.y + self.speed*math.sin(self.direction)
+    def move(self,time):
+        self.x += self.speed*math.cos(self.direction)*time #wahoo trig
+        self.y += self.speed*math.sin(self.direction)*time
         if(self.x < -100 or self.y < -100 or self.x > 1380 or self.y > 820):
             self.killyourself = True
     def hitcheck(self):
@@ -51,13 +53,16 @@ class Bullet:
 
 class Player:
     """YOU, DAWG"""
+    __slots__ = ['lives','bombs','x','y','radius','speed','last_bullet_fired_time','consecutive_cool_down',\
+                 'last_bomb_time','bomb_cool_down','bomb_state','bomb_radius','bomb_x','bomb_y','power','invuln_time']
+                 
     def __init__(self, lives, bombs):
         self.lives = lives #extra life
         self.bombs = bombs #droppin bombs
         self.x = wwidth/2 #placeholder for center bottom of screen
         self.y = 30 #player always spawns in same place
         self.radius = 2 #hitbox size
-        self.speed = 400/60
+        self.speed = 300 #speed in pixel/seconds
         self.last_bullet_fired_time = 0
         self.consecutive_cool_down = 0.15
         self.last_bomb_time = 0
@@ -76,18 +81,18 @@ class Player:
             self.x = 640
             self.y = 50
             self.invuln_time = 100
-    def moveleft(self):
+    def moveleft(self,time):
         if self.x>10:
-            self.x =self.x-self.speed
-    def moveright(self):
+            self.x -=self.speed * time
+    def moveright(self,time):
         if self.x<wwidth-10:
-            self.x =self.x+self.speed
-    def moveup(self):
+            self.x +=self.speed * time
+    def moveup(self,time):
         if self.y<wheight-10:
-            self.y =self.y+self.speed
-    def movedown(self):
+            self.y +=self.speed * time
+    def movedown(self,time):
         if self.y>10:
-            self.y =self.y-self.speed  
+            self.y -=self.speed * time
     #def fire(self):
         #bullet_array.append(Bullet(self.x, self.y, 4, math.pi/2 , 1, True))
         #bullet_array.append(Bullet(self.x, self.y, 4, 5*math.pi/12 , 1, True))
@@ -95,22 +100,22 @@ class Player:
     def fire(self): #instantiate a bullet and place it in the active array            
         if self.power > 4:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-                bullet_array.append(Bullet(self.x-10, self.y, 30, math.pi/2 , 1, True))
-                bullet_array.append(Bullet(self.x+10, self.y, 30, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 30*60, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 30*60, math.pi/2 , 1, True))
         if self.power > 3:
             if(time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-                bullet_array.append(Bullet(self.x-10, self.y, 15, 9*math.pi/24 , 1, True))
-                bullet_array.append(Bullet(self.x+10, self.y, 15, 15*math.pi/24 , 1, True))
+                bullet_array.append(Bullet(self.x-10, self.y, 15*60, 9*math.pi/24 , 1, True))
+                bullet_array.append(Bullet(self.x+10, self.y, 15*60, 15*math.pi/24 , 1, True))
         if self.power > 2:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-                bullet_array.append(Bullet(self.x-25, self.y-20, 20, math.pi/2 , 1, True))
-                bullet_array.append(Bullet(self.x+25, self.y-20, 20, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x-25, self.y-20, 20*60, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x+25, self.y-20, 20*60, math.pi/2 , 1, True))
         if self.power > 1:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-                bullet_array.append(Bullet(self.x+5, self.y, 10, 5*math.pi/12 , 1, True))
-                bullet_array.append(Bullet(self.x-5, self.y, 10, 7*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x+5, self.y, 10*60, 5*math.pi/12 , 1, True))
+                bullet_array.append(Bullet(self.x-5, self.y, 10*60, 7*math.pi/12 , 1, True))
         if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
-                bullet_array.append(Bullet(self.x, self.y, 15, math.pi/2 , 1, True))
+                bullet_array.append(Bullet(self.x, self.y, 15*60, math.pi/2 , 1, True))
                 self.last_bullet_fired_time = time.time()
     def bomb(self):
         if(self.bombs > 0 and (time.time()-self.last_bomb_time)>self.bomb_cool_down):
@@ -123,13 +128,15 @@ class Player:
         
 class Enemy:
     """THEM"""
+    __slots__ = ['x','y','health','circular','ccw','speed','cx','cy','radius','killyourself','direction','last_bullet_fired_time',\
+                 'stream_cool_down','consecutive_cool_down','bullet_count']
     def __init__(self, x, y, health, stream_cool_down, direction = 0, circular = False, cx = 0, cy = 0):
         self.x = x
         self.y = y
         self.health = health
         self.circular = circular
         self.ccw = True #default to counter-clockwise circular motion
-        self.speed = 200/60
+        self.speed = 200 #in pixel/seconds
         self.cx = cx #circle centre
         self.cy = cy
         self.radius = 10 #hitbox
@@ -142,24 +149,24 @@ class Enemy:
     def fire(self): #instantiate a bullet and place it in the active array            
         if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
             if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                bullet_array.append(Bullet(self.x, self.y, 3, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
+                bullet_array.append(Bullet(self.x, self.y, 180, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count-1
                 self.last_bullet_fired_time = time.time()
             else:
                 self.last_bullet_fired_time = self.stream_cool_down + self.last_bullet_fired_time
                 self.bullet_count = 10
-    def move(self): #movement
+    def move(self,time): #movement
         if(self.circular == True):
             self.direction =  math.atan2((self.y-self.cy),(self.x-self.cx))
             if(self.ccw == True):
-                self.x = self.x + self.speed*math.cos(self.direction+math.pi/2)
-                self.y = self.y + self.speed*math.sin(self.direction+math.pi/2)
+                self.x += self.speed*math.cos(self.direction+math.pi/2)*time
+                self.y += self.speed*math.sin(self.direction+math.pi/2)*time
             else:
-                self.x = self.x + self.speed*math.cos(self.direction-math.pi/2)
-                self.y = self.y + self.speed*math.sin(self.direction-math.pi/2)
+                self.x += self.speed*math.cos(self.direction-math.pi/2)*time
+                self.y += self.speed*math.sin(self.direction-math.pi/2)*time
         else:
-            self.x = self.x + self.speed*math.cos(self.direction)
-            self.y = self.y + self.speed*math.sin(self.direction)
+            self.x += self.speed*math.cos(self.direction)*time
+            self.y += self.speed*math.sin(self.direction)*time
         if(self.x < 0 or self.y < 0 or self.x > 1280 or self.y > 720 or self.health <= 0):
             self.killyourself = True
     def circ(self, cx, cy):
@@ -186,31 +193,31 @@ class StageOneBoss (Enemy):
         if self.power > 7:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
                 if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time: 
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))-2*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))+2*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))-3*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))+3*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))-4*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))+4*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))-5*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))+5*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4, math.atan2((player.y-self.y),(player.x-self.x))-6*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-2*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+2*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-3*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+3*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-4*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+4*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-5*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+5*math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-6*math.pi/6 , 1, False))
                     self.bullet_count = self.bullet_count-9
         if self.power > 5:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
                 if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                    bullet_array.append(Bullet(self.x, self.y, 7, math.atan2((player.y-self.y),(player.x-self.x))-math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 7, math.atan2((player.y-self.y),(player.x-self.x))+math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 7*60, math.atan2((player.y-self.y),(player.x-self.x))-math.pi/6 , 1, False))
+                    bullet_array.append(Bullet(self.x, self.y, 7*60, math.atan2((player.y-self.y),(player.x-self.x))+math.pi/6 , 1, False))
                     self.bullet_count = self.bullet_count-2
         if self.power > 3:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
                 if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                    bullet_array.append(Bullet(self.x-10, self.y, 2+self.power/2, math.atan2((player.y-self.y),(player.x-10-self.x)), 1, False))
-                    bullet_array.append(Bullet(self.x+10, self.y, 2+self.power/2, math.atan2((player.y-self.y),(player.x+10-self.x)), 1, False))
+                    bullet_array.append(Bullet(self.x-10, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x-10-self.x)), 1, False))
+                    bullet_array.append(Bullet(self.x+10, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x+10-self.x)), 1, False))
                     self.bullet_count = self.bullet_count-2
         if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
             if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                bullet_array.append(Bullet(self.x, self.y, 2+self.power/2, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
+                bullet_array.append(Bullet(self.x, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count-1
                 self.last_bullet_fired_time = time.time()
             else:
