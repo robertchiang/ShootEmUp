@@ -51,6 +51,27 @@ class Bullet:
                             player.killyourself()
                         self.killyourself = True
 
+class HBullet (Bullet):
+    """HOMES, HOMES"""
+    
+    def move (self, time):
+        if(not self.player_owned):
+            #NO PLAYER HOMING FUNCTIONALITY FOR NOW
+            
+            self.direction = math.atan2 (math.sin(self.direction)+(player.y-self.y)/30000, math.cos(self.direction)+(player.x-self.x)/30000)
+        Bullet.move(self, time)
+
+class TBullet (Bullet):
+    """THE T STANDS FOR 'TRIPPING BALLS'"""
+    
+    def move (self, time):
+        if(not self.player_owned):
+            #I DON'T EVEN KNOW WHY IT DOES THIS
+            self.direction = self.direction + (math.atan2((player.y-self.y),(player.x-self.x))) / 120
+            #self.direction = self.direction + (math.atan2((player.y-self.y),(player.x-self.x)) - self.direction)/ math.hypot(self.x-player.x, self.y-player.y)
+        Bullet.move(self, time)
+    
+
 class Player:
     """YOU, DAWG"""
     __slots__ = ['lives','bombs','x','y','radius','speed','last_bullet_fired_time','consecutive_cool_down',\
@@ -217,7 +238,7 @@ class StageOneBoss (Enemy):
                     self.bullet_count = self.bullet_count-2
         if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
             if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                bullet_array.append(Bullet(self.x, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
+                bullet_array.append(HBullet(self.x, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count-1
                 self.last_bullet_fired_time = time.time()
             else:
@@ -229,7 +250,7 @@ class StageOneBoss (Enemy):
                 elif self.power > 3:
                     self.bullet_count = 400
                 else:
-                    self.bullet_count = 100
+                    self.bullet_count = 0
                     
 
 class Stage:
