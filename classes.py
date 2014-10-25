@@ -36,6 +36,7 @@ class Bullet:
                         if(safe > math.sqrt((self.x - enemy.x) * (self.x - enemy.x) + (self.y - enemy.y) * (self.y - enemy.y))): #proper hitcheck
                             enemy.health = enemy.health - 1
                             self.killyourself = True
+                            player.power = player.power + 0.5
         else: 
             if player.bomb_state:
                 safe = self.radius + player.bomb_radius
@@ -58,11 +59,20 @@ class HBullet (Bullet):
         if(not self.player_owned):
             #NO PLAYER HOMING FUNCTIONALITY FOR NOW
             
-            self.direction = math.atan2 (math.sin(self.direction)+(player.y-self.y)/30000, math.cos(self.direction)+(player.x-self.x)/30000)
+            self.direction = math.atan2 (math.sin(self.direction)+(player.y-self.y)/5000, math.cos(self.direction)+(player.x-self.x)/5000)
+            #if(math.atan2((player.y-self.y),(player.x-self.x)) - self.direction > math.pi/50):
+            #    self.direction = self.direction + math.pi/50
+            #elif(self.direction - math.atan2((player.y-self.y),(player.x-self.x)) > math.pi/50):
+            #    self.direction = self.direction - math.pi/50
+            #else:
+            #    self.direction = math.atan2((player.y-self.y),(player.x-self.x))
+            #self.direction = math.atan2((player.y-self.y),(player.x-self.x)) -math.pi/3*math.exp(-1*pow(math.hypot(self.x-player.x, self.y-player.y),2))+math.pi/3
+            self.speed = self.speed+0.25
+            #-45e^(-x)+45
         Bullet.move(self, time)
 
 class TBullet (Bullet):
-    """THE T STANDS FOR 'TRIPPING BALLS'"""
+    """THE T STANDS FOR 'TRIPPING'"""
     
     def move (self, time):
         if(not self.player_owned):
@@ -151,13 +161,13 @@ class Enemy:
     """THEM"""
     __slots__ = ['x','y','health','circular','ccw','speed','cx','cy','radius','killyourself','direction','last_bullet_fired_time',\
                  'stream_cool_down','consecutive_cool_down','bullet_count']
-    def __init__(self, x, y, health, stream_cool_down, direction = 0, circular = False, cx = 0, cy = 0):
+    def __init__(self, x, y, health, stream_cool_down = 0, direction = 0, circular = False, ccw = True, cx = 0, cy = 0, speed = 200):
         self.x = x
         self.y = y
         self.health = health
         self.circular = circular
-        self.ccw = True #default to counter-clockwise circular motion
-        self.speed = 200 #in pixel/seconds
+        self.ccw = ccw #default to counter-clockwise circular motion
+        self.speed = speed #in pixel/seconds
         self.cx = cx #circle centre
         self.cy = cy
         self.radius = 10 #hitbox
@@ -188,7 +198,7 @@ class Enemy:
         else:
             self.x += self.speed*math.cos(self.direction)*time
             self.y += self.speed*math.sin(self.direction)*time
-        if(self.x < 0 or self.y < 0 or self.x > 1280 or self.y > 720 or self.health <= 0):
+        if(self.x < -50 or self.y < -50 or self.x > 1330 or self.y > 770 or self.health <= 0):
             self.killyourself = True
     def circ(self, cx, cy):
         self.circular = True
@@ -263,7 +273,7 @@ class Stage:
     def stage_activate(self, stage_start_time):
         self.stage_start_time = stage_start_time
     def make_things_appear(self): #method to call every loop() iteration in main to check if things can be added
-        if (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter] + self.stage_start_time):
+        while (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter] + self.stage_start_time):
             #enemy_array.append(self.enemy_queue[self.counter])
             enemy_array.append(Enemy(*(self.enemy_queue[self.counter])))
             self.counter = self.counter + 1
