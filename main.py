@@ -6,8 +6,10 @@ from pyglet.window import mouse
 import math
 from pyglet.gl import *
 
+
 import time
 import csv
+import copy
 
 from classes import *
 
@@ -17,15 +19,19 @@ def import_stage(filename): # format of row: time,x,y,health,stream_cool_down,di
     with open(filename, 'r') as f:
         delimited_text = csv.reader(f, delimiter=',', skipinitialspace=True, quotechar='"')
         for row in delimited_text:
-            if row and not row[0][0] == "#": #first row is comments, doesnt count
+            if row and len(row) > 0 and len(row[0])> 0 and not row[0][0] == "#": #first row is comments, doesnt count
                 time_queue.append(float(row[0]))
-                enemy_args = [ int(row[1]), int(row[2]), int(row[3]), float(row[4]) ]
+                enemy_args = [ int(row[1]), int(row[2]), int(row[3])]
                 #if len(row)>5:
-                for i in range(5, len(row)):
-                    if i == 5:     enemy_args.append(float(row[5]))
-                    elif i == 6:   enemy_args.append(bool(row[6]))
-                    elif i == 7:   enemy_args.append(int(row[7]))
-                    elif i == 8:   enemy_args.append(int(row[8]))                    
+                for i in range(4, len(row)):
+                    if len(row[i])>0:
+                        if i == 4:      enemy_args.append(float(row[4]))
+                        elif i == 5:    enemy_args.append(float(eval(row[5])))
+                        elif i == 6:    enemy_args.append(bool(int(row[6])))
+                        elif i == 7:    enemy_args.append(bool(int(row[7])))
+                        elif i == 8:    enemy_args.append(int(row[8]))
+                        elif i == 9:    enemy_args.append(int(row[9]))
+                        elif i == 10:   enemy_args.append(int(row[10]))
                 enemy_queue.append(enemy_args)
     return Stage(time_queue, enemy_queue)
 
@@ -49,7 +55,7 @@ def load_resources():
     
     global draw_function, loop_function
     
-    global game_label, start_button_label, settings_label, quit_label
+    global game_label, start_button_label, settings_label, quit_label, game_over_label
     game_label = pyglet.text.Label('shmupHell', 
                               font_name='Times New Roman', 
                               font_size=20,
@@ -76,16 +82,27 @@ def load_resources():
                               x=game_window.width//2, y=game_window.height-400,
                               anchor_x='center', anchor_y='center')
     
+    game_over_label = pyglet.text.Label('Game Over!', 
+                              font_name='Times New Roman', 
+                              font_size=16,
+                              x=game_window.width//2, y=100,
+                              anchor_x='center', anchor_y='center')
+    
     global player, bullet_array, enemy_array 
     global draw_function, loop_function
     rebind_main_menu()
     
+    global stage1
+    stage1 = import_stage("stage1.csv")
     global current_stage
-    current_stage = import_stage("stage1.csv")
+    
+    global display_game_over
+    display_game_over = False
     
     global fps_display 
     
     fps_display = pyglet.clock.ClockDisplay()
+    pyglet.clock.set_fps_limit(30)
 
 def draw_menu():   
     for i in range(0,3):
@@ -110,10 +127,20 @@ def draw_menu():
     settings_label.draw()
     quit_label.draw()
     
+    if display_game_over:
+        game_over_label.draw()
+    
 
 def draw_ingame():
     
     if player:
+        if player.bomb_state:
+            glColor3f(0.7,0.7,0.7) #gray when invulnerable
+            glBegin(GL_POLYGON)
+            for i in [2*math.pi*x/(player.bomb_radius/4+10) for x in range(0,int(player.bomb_radius/4+10))]:
+                glVertex2f(player.bomb_x+player.bomb_radius*math.cos(i), player.bomb_y+player.bomb_radius*math.sin(i))
+            glEnd()
+            glColor3f(1,1,1)
         if player.invuln_time>0:
             glColor3f(0.5,0.5,0.5) #gray when invulnerable
         glBegin(GL_POLYGON) #player as diamond for now
@@ -160,7 +187,11 @@ def loop_menu(time):
 
     
 def loop_ingame(time):
-    
+    if player.game_over:
+        rebind_main_menu()
+        global display_game_over
+        display_game_over= True
+        
     if key_state[key.LEFT]:
         player.moveleft(time)
     if key_state[key.RIGHT]:
@@ -182,12 +213,12 @@ def loop_ingame(time):
     #print(player.invuln_time)
     if player.invuln_time > 0:
         player.invuln_time = player.invuln_time - 1
-    player.power = player.power + 0.01   
-    
+    #player.power = player.power + 0.01   
+
     current_stage.make_things_appear()
-    
+
     global enemy_array, bullet_array
-    
+
     if enemy_array:    
         enemy_array[:] = (enemy for enemy in enemy_array if not enemy.killyourself)
         for enemy in enemy_array:
@@ -214,11 +245,13 @@ def create_entities():
 
 
     player = Player(2, 3)
+    global current_stage
+    current_stage = copy.deepcopy(stage1)
     
     cache_references(player, bullet_array, enemy_array) 
     boss = StageOneBoss()
-    boss.health = 10
-    enemy_array.append(boss)
+    boss.health = 5000
+    #enemy_array.append(boss)
 
     current_stage.stage_activate(time.time())
     #enemy_array.append(Enemy(400,400,1, 0))
@@ -308,5 +341,5 @@ def on_draw():
 
         
 if __name__ == '__main__':
-    pyglet.clock.schedule_interval(loop, 1/60)
+    pyglet.clock.schedule_interval(loop, 1/120)
     pyglet.app.run()    

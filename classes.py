@@ -85,7 +85,8 @@ class TBullet (Bullet):
 class Player:
     """YOU, DAWG"""
     __slots__ = ['lives','bombs','x','y','radius','speed','last_bullet_fired_time','consecutive_cool_down',\
-                 'last_bomb_time','bomb_cool_down','bomb_state','bomb_radius','bomb_x','bomb_y','power','invuln_time']
+                 'last_bomb_time','bomb_cool_down','bomb_state','bomb_radius','bomb_x','bomb_y','power',\
+                 'invuln_time','game_over']
                  
     def __init__(self, lives, bombs):
         self.lives = lives #extra life
@@ -104,10 +105,11 @@ class Player:
         self.bomb_y = 0
         self.power = 0 #NO ONE MAN SHOULD HAVE ALL THAT POWER
         self.invuln_time = 0
+        self.game_over = False
     def killyourself(self):
         self.lives = self.lives - 1
         if(self.lives < 0):
-            game_over()
+            self.game_over = True
         else:
             self.x = 640
             self.y = 50
