@@ -36,7 +36,7 @@ class Bullet:
                         if(safe > math.sqrt((self.x - enemy.x) * (self.x - enemy.x) + (self.y - enemy.y) * (self.y - enemy.y))): #proper hitcheck
                             enemy.health = enemy.health - 1
                             self.killyourself = True
-                            player.power = player.power + 0.5
+                            player.power = player.power + 0.1
         else: 
             if player.bomb_state:
                 safe = self.radius + player.bomb_radius
@@ -219,23 +219,24 @@ class StageOneBoss (Enemy):
         self.speed = 0
         self.radius = 100
         self.stream_cool_down = 2
+        self.homing_cool_down = 1.5
+        self.last_homing_fired_time = 0
         self.bullet_count = 100
         self.power = 0
     def fire(self): #instantiate a bullet and place it in the active array
         self.power = (5000 - self.health)/500
-        if self.power > 7:
-            if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
+        if self.power > 9.99:
+            for x in range(0, 360):
+                bullet_array.append(Bullet(self.x, self.y, 7*60, math.pi*x/180 , 1, False))
+        if self.power > 6:
+            if (time.time()-self.last_homing_fired_time)>self.homing_cool_down:
                 if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time: 
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-2*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+2*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-3*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+3*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-4*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+4*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-5*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))+5*math.pi/6 , 1, False))
-                    bullet_array.append(Bullet(self.x, self.y, 4*60, math.atan2((player.y-self.y),(player.x-self.x))-6*math.pi/6 , 1, False))
-                    self.bullet_count = self.bullet_count-9
+                    bullet_array.append(HBullet(self.x, self.y, 2*60, math.atan2((player.y-self.y),(player.x-self.x))-2*math.pi/6 , 1, False))
+                    bullet_array.append(HBullet(self.x, self.y, 2*60, math.atan2((player.y-self.y),(player.x-self.x))+2*math.pi/6 , 1, False))
+                    bullet_array.append(HBullet(self.x, self.y, 2*60, math.atan2((player.y-self.y),(player.x-self.x))-3*math.pi/6 , 1, False))
+                    bullet_array.append(HBullet(self.x, self.y, 2*60, math.atan2((player.y-self.y),(player.x-self.x))+3*math.pi/6 , 1, False))
+                    self.last_homing_fired_time = time.time()
+                    self.bullet_count = self.bullet_count-4
         if self.power > 5:
             if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
                 if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
@@ -250,7 +251,7 @@ class StageOneBoss (Enemy):
                     self.bullet_count = self.bullet_count-2
         if (time.time()-self.last_bullet_fired_time)>self.consecutive_cool_down:
             if self.bullet_count > 0 and time.time() > self.last_bullet_fired_time:
-                bullet_array.append(HBullet(self.x, self.y, (2+self.power/2)*60, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
+                bullet_array.append(Bullet(self.x, self.y, (2+self.power/4)*60, math.atan2((player.y-self.y),(player.x-self.x)), 1, False))
                 self.bullet_count = self.bullet_count-1
                 self.last_bullet_fired_time = time.time()
             else:
@@ -262,7 +263,7 @@ class StageOneBoss (Enemy):
                 elif self.power > 3:
                     self.bullet_count = 400
                 else:
-                    self.bullet_count = 0
+                    self.bullet_count = 200
                     
 
 class Stage:
