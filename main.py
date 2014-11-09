@@ -21,17 +21,21 @@ def import_stage(filename): # format of row: time,x,y,health,stream_cool_down,di
         for row in delimited_text:
             if row and len(row) > 0 and len(row[0])> 0 and not row[0][0] == "#": #first row is comments, doesnt count
                 time_queue.append(float(row[0]))
-                enemy_args = [ int(row[1]), int(row[2]), int(row[3])]
+                enemy_args = [ globals()[(row[1])] ]
+                
                 #if len(row)>5:
-                for i in range(4, len(row)):
+                for i in range(2, len(row)):
                     if len(row[i])>0:
-                        if i == 4:      enemy_args.append(float(row[4]))
-                        elif i == 5:    enemy_args.append(float(eval(row[5])))
-                        elif i == 6:    enemy_args.append(bool(int(row[6])))
+                        if i == 2:      enemy_args.append(int(row[2]))
+                        elif i == 3:    enemy_args.append(int(row[3]))
+                        elif i == 4:    enemy_args.append(int(row[4]))
+                        elif i == 5:    enemy_args.append(float(row[5]))
+                        elif i == 6:    enemy_args.append(float(eval(row[6])))
                         elif i == 7:    enemy_args.append(bool(int(row[7])))
-                        elif i == 8:    enemy_args.append(int(row[8]))
+                        elif i == 8:    enemy_args.append(bool(int(row[8])))
                         elif i == 9:    enemy_args.append(int(row[9]))
                         elif i == 10:   enemy_args.append(int(row[10]))
+                        elif i == 11:   enemy_args.append(int(row[11]))
                 enemy_queue.append(enemy_args)
     return Stage(time_queue, enemy_queue)
 
@@ -249,8 +253,8 @@ def create_entities():
     current_stage = copy.deepcopy(stage1)
     
     cache_references(player, bullet_array, enemy_array) 
-    boss = StageOneBoss()
-    boss.health = 5000
+    #boss = StageOneBoss()
+    #boss.health = 5000
     #enemy_array.append(boss)
 
     current_stage.stage_activate(time.time())

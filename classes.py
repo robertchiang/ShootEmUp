@@ -278,5 +278,6 @@ class Stage:
     def make_things_appear(self): #method to call every loop() iteration in main to check if things can be added
         while (self.stage_start_time>0 and self.enemy_count > self.counter and time.time() > self.time_queue[self.counter] + self.stage_start_time):
             #enemy_array.append(self.enemy_queue[self.counter])
-            enemy_array.append(Enemy(*(self.enemy_queue[self.counter])))
+            classfn = self.enemy_queue[self.counter][0]
+            enemy_array.append(classfn(*(self.enemy_queue[self.counter][1:])))
             self.counter = self.counter + 1
